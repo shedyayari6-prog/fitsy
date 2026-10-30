@@ -186,7 +186,12 @@ const cache = new Map<string, Promise<Texture>>();
 export function loadGarmentTexture(imagePath: string): Promise<Texture> {
   const hit = cache.get(imagePath);
   if (hit) return hit;
-  const p = signedImageUrl(imagePath).then(loadImage).then(makeTexture);
+  const p = signedImageUrl(imagePath)
+    .then((url) => {
+      if (!url) throw new Error('Could not get the garment photo.');
+      return loadImage(url);
+    })
+    .then(makeTexture);
   cache.set(imagePath, p);
   p.catch(() => cache.delete(imagePath));
   return p;
