@@ -1,0 +1,23 @@
+# Minimal Supabase CLI config. Run `supabase init` if you want the full default file.
+project_id = "sage"
+
+[functions.ai-stylist]
+verify_jwt = true
+
+[functions.delete-account]
+verify_jwt = true
+
+# send-notifications authenticates itself: a signed-in user's JWT (test sends) or the x-cron-secret header (scheduler).
+[functions.send-notifications]
+verify_jwt = false
+
+# Auth "Send Email" hook: Supabase signs the request itself (standard-webhooks), so no JWT is sent.
+[functions.send-auth-email]
+verify_jwt = false
+
+[functions.store-geo]
+verify_jwt = true
+
+# store-cleanup is called by the scheduler with x-cron-secret, not by users.
+[functions.store-cleanup]
+verify_jwt = false
