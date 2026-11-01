@@ -1,5 +1,9 @@
 /** Additional Arabic UI translations for the remaining active interface strings. */
 export const arExtra: Record<string, string> = {
+  "Promo ad": "الإعلان الترويجي",
+  "Promo ad sound": "صوت الإعلان الترويجي",
+  "Play a sound when the promo ad appears.": "تشغيل صوت عند ظهور الإعلان الترويجي.",
+  "WhatsApp support": "الدعم عبر واتساب",
   "Microphone access was blocked. Allow it in your browser settings, or just type.": "تم حظر الوصول إلى الميكروفون. اسمح به من إعدادات المتصفح أو اكتب رسالتك.",
   "I didn't catch anything. Try again or type your message.": "لم أتمكن من فهم ما قلته. حاول مرة أخرى أو اكتب رسالتك.",
   "Voice input is not supported in this browser. Typing works everywhere.": "الإدخال الصوتي غير مدعوم في هذا المتصفح. يمكنك الكتابة في أي متصفح.",

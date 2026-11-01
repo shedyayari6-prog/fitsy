@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useLocation, Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { Home, MessageCircle, Sparkles, Shirt, Trophy, User, Settings, Flame, Store, Box, Compass } from 'lucide-react';
+import { Home, MessageCircle, Sparkles, Shirt, Trophy, User, Settings, Flame, Store, Box, Compass, Star } from 'lucide-react';
 import { Logo, DemoBanner } from '@/components/ui';
 import { XPBar } from '@/components/gamification/XPBar';
 import { useAuth } from '@/hooks/useAuth';
@@ -52,10 +52,12 @@ export function AppShell() {
           <Logo to="/app" />
           <div className="topbar__right">
             {progress && (
-              <span className="streak-pill" aria-label={t('{n} day streak, level {level}', { n: progress.current_streak, level: progress.level })}>
-                <Flame size={16} aria-hidden /> {progress.current_streak} · Lv {progress.level}
+              <span className="level-status" aria-label={t('{n} day streak, level {level}', { n: progress.current_streak, level: progress.level })}>
+                <span className="level-status__streak"><Flame size={15} aria-hidden /> {progress.current_streak}</span>
+                <span className="level-status__level"><Star size={14} aria-hidden /> {t('Level {n}', { n: progress.level })}</span>
               </span>
             )}
+            <Link to="/app/glowup" className={`icon-btn${loc.pathname.startsWith('/app/glowup') ? ' icon-btn--on' : ''}`} aria-label={t('GlowUp Quest')} title={t('GlowUp Quest')}><Compass size={20} /></Link>
             <Link to="/app/profile" className="icon-btn" aria-label={t('Profile')}><User size={20} /></Link>
             <Link to="/app/settings" className="icon-btn" aria-label={t('Settings')}><Settings size={20} /></Link>
           </div>

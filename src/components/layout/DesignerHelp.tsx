@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { ExternalLink } from 'lucide-react';
+import { brand } from '@/config/brand';
 
 const MESSAGES = [
   {
@@ -28,11 +29,14 @@ const MESSAGES = [
   },
 ];
 
-const WHATSAPP_URL = 'https://wa.me/3508653895';
 const POSITION_KEY = 'fitsy.designer-help.position';
 
 interface Position { x: number; y: number }
-interface DragState { pointerId: number; startX: number; startY: number; originX: number; originY: number; moved: boolean }
+interface DragState {
+  pointerId: number; startX: number; startY: number; originX: number; originY: number; moved: boolean;
+  lastX: number; lastY: number; shakeAxis: 'x' | 'y' | null; shakeDirection: number; shakeReversals: number;
+  shakeDistance: number; shakeStartedAt: number;
+}
 
 function savedPosition(): Position | null {
   try {
@@ -46,6 +50,7 @@ function savedPosition(): Position | null {
 export function DesignerHelp() {
   const [messageIndex, setMessageIndex] = useState(0);
   const [position, setPosition] = useState<Position | null>(savedPosition);
+  const [shaken, setShaken] = useState(false);
   const widgetRef = useRef<HTMLElement>(null);
   const dragRef = useRef<DragState | null>(null);
   const suppressClickUntil = useRef(0);
@@ -69,6 +74,13 @@ export function DesignerHelp() {
       originX: rect.left,
       originY: rect.top,
       moved: false,
+      lastX: event.clientX,
+      lastY: event.clientY,
+      shakeAxis: null,
+      shakeDirection: 0,
+      shakeReversals: 0,
+      shakeDistance: 0,
+      shakeStartedAt: Date.now(),
     };
     event.currentTarget.setPointerCapture(event.pointerId);
   };
@@ -79,6 +91,26 @@ export function DesignerHelp() {
     if (!drag || !widget || drag.pointerId !== event.pointerId) return;
     const dx = event.clientX - drag.startX;
     const dy = event.clientY - drag.startY;
+    const stepX = event.clientX - drag.lastX;
+    const stepY = event.clientY - drag.lastY;
+    drag.lastX = event.clientX;
+    drag.lastY = event.clientY;
+    const axis = Math.abs(stepX) >= Math.abs(stepY) ? 'x' : 'y';
+    const step = axis === 'x' ? stepX : stepY;
+    if (Math.abs(step) >= 6) {
+      const direction = Math.sign(step);
+      if (Date.now() - drag.shakeStartedAt > 1800) {
+        drag.shakeStartedAt = Date.now();
+        drag.shakeReversals = 0;
+        drag.shakeDistance = 0;
+        drag.shakeAxis = null;
+      }
+      if (drag.shakeAxis === axis && drag.shakeDirection !== direction) drag.shakeReversals += 1;
+      drag.shakeAxis = axis;
+      drag.shakeDirection = direction;
+      drag.shakeDistance += Math.abs(step);
+      if (drag.shakeReversals >= 5 && drag.shakeDistance >= 100) setShaken(true);
+    }
     if (!drag.moved && Math.hypot(dx, dy) < 5) return;
     drag.moved = true;
     setPosition({
@@ -104,6 +136,10 @@ export function DesignerHelp() {
 
   const advanceMessage = () => {
     if (Date.now() < suppressClickUntil.current) return;
+    if (shaken) {
+      setShaken(false);
+      return;
+    }
     setMessageIndex((index) => (index + 1) % MESSAGES.length);
   };
 
@@ -118,17 +154,17 @@ export function DesignerHelp() {
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
         onClick={advanceMessage}
-        aria-label={`Change message language. Current language: ${current.label}`}
-        title={`${current.label} · click to change language`}
+        aria-label={shaken ? 'Restore designer help message' : `Change message language. Current language: ${current.label}`}
+        title={shaken ? 'Click to restore' : `${current.label} · click to change language`}
       >
-        <img src="/mascot/streak_growing.png" alt="" width="344" height="492" />
+        <img src={shaken ? '/mascot/crying.png' : '/mascot/streak_growing.png'} alt="" width="344" height="492" />
       </button>
-      <div className="designer-help__message" lang={current.lang} dir={current.lang === 'ar' ? 'rtl' : 'ltr'}>
+      {!shaken && <div className="designer-help__message" lang={current.lang} dir={current.lang === 'ar' ? 'rtl' : 'ltr'}>
         <p>{current.message}</p>
-        <a href={WHATSAPP_URL} target="_blank" rel="noreferrer">
-          {current.contact} <span>3508653895</span> <ExternalLink size={14} aria-hidden="true" />
+        <a href={brand.whatsappUrl} target="_blank" rel="noreferrer noopener">
+          {current.contact} <span>+39 350 865 3895</span> <ExternalLink size={14} aria-hidden="true" />
         </a>
-      </div>
+      </div>}
     </aside>
   );
 }

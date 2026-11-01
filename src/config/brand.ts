@@ -30,6 +30,8 @@ export const brand = {
     streak: '/mascot/streak_growing.png',
   },
   contactEmail: 'hello@example.com',
+  whatsappUrl: 'https://wa.me/393508653895',
+  whatsappDisplay: '+39 350 865 3895',
   /** Leave empty to hide the social links in the footer. */
   social: [] as { label: string; href: string }[],
   palette: {

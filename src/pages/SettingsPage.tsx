@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BellRing, Download, ExternalLink, LogOut, Mail, Trash2 } from 'lucide-react';
+import { BellRing, Download, ExternalLink, LogOut, Mail, MessageCircle, Trash2 } from 'lucide-react';
+import { brand } from '@/config/brand';
 import { useApp } from '@/hooks/useApp';
 import { useAuth } from '@/hooks/useAuth';
 import { useSettings } from '@/hooks/useSettings';
@@ -111,6 +112,12 @@ export default function SettingsPage() {
         <p className="muted small">{t('The microphone is only used while you press the mic button in the chat, and your browser asks permission first.')}</p>
       </section>
 
+      <section className="card stack" aria-labelledby="s-promo">
+        <h2 id="s-promo" className="card__title">{t('Promo ad')}</h2>
+        <Toggle checked={settings.promoAdSound} onChange={(v) => update({ promoAdSound: v })}
+          label={t('Promo ad sound')} hint={t('Play a sound when the promo ad appears.')} />
+      </section>
+
       <section className="card stack" aria-labelledby="s-notif">
         <h2 id="s-notif" className="card__title"><BellRing size={18} aria-hidden /> {t('Notifications')}</h2>
         {demo ? (
@@ -176,6 +183,7 @@ export default function SettingsPage() {
             onClick={() => void run('pw', async () => { const e = await requestReset(user.email!); if (e) throw new Error(e); }, t('Password reset email sent.'))}>{t('Change password')}</Button>}
           <Button variant="ghost" icon={<LogOut size={16} />} onClick={() => void signOut().then(() => nav('/', { replace: true }))}>{t('Sign out')}</Button>
         </div>
+        <p className="muted small"><a href={brand.whatsappUrl} target="_blank" rel="noopener noreferrer"><MessageCircle size={14} aria-hidden style={{ display: 'inline', verticalAlign: '-2px' }} /> {t('WhatsApp support')} · {brand.whatsappDisplay} <ExternalLink size={13} aria-hidden style={{ display: 'inline', verticalAlign: '-2px' }} /></a></p>
         <p className="muted small"><a href="https://vintrexshop.store" target="_blank" rel="noopener noreferrer">Vintrex Shop <ExternalLink size={13} aria-hidden style={{ verticalAlign: '-2px' }} /></a></p>
       </section>
 

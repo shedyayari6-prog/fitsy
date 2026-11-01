@@ -22,6 +22,7 @@ import { useApp } from '@/hooks/useApp';
 import { useT } from '@/i18n';
 import { DesignerHelp } from '@/components/layout/DesignerHelp';
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
+import FitsyPromoAd from "./components/FitsyPromoAd/FitsyPromoAd";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -78,6 +79,7 @@ export default function App() {
       <ScrollToTop />
       <StandaloneLanguageSwitcher />
       <DesignerHelp />
+      <FitsyPromoAd />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />

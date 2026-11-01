@@ -252,6 +252,11 @@ input[type='range'] { width: 100%; accent-color: var(--forest); }
 .topbar { display: none; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--card); position: sticky; top: 0; z-index: 20; }
 .topbar__right { display: flex; align-items: center; gap: 2px; }
 .streak-pill { display: inline-flex; gap: 5px; align-items: center; background: var(--clay-soft); color: var(--forest-ink); border-radius: var(--r-pill); padding: 4px 12px; font-weight: 700; font-size: .85rem; }
+.level-status { display: inline-flex; align-items: center; gap: 3px; flex: none; padding: 3px; border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--cream); color: var(--forest-ink); font-size: .76rem; font-weight: 700; line-height: 1; }
+.level-status__streak, .level-status__level { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 29px; white-space: nowrap; }
+.level-status__streak { min-width: 38px; padding: 0 8px; border-radius: var(--r-pill); background: var(--clay-soft); color: var(--clay-deep); }
+.level-status__level { padding: 0 9px; border-radius: var(--r-pill); background: var(--sage-soft); color: var(--forest); }
+.level-status__level svg { color: var(--sage-deep); }
 .content { padding: 28px clamp(16px, 3vw, 40px) 60px; }
 .bottomnav { display: none; }
 
@@ -395,6 +400,12 @@ input[type='range'] { width: 100%; accent-color: var(--forest); }
   .grid-2, .grid-3, .options { grid-template-columns: 1fr; }
   .card { padding: 18px; border-radius: 22px; } .dash__grid { grid-template-columns: 1fr; }
   .msg__bubble { max-width: 94%; } .toasts { left: 16px; right: 16px; }
+  .topbar { gap: 8px; padding-inline: 12px; }
+  .topbar > .logo { flex: 1; min-width: 0; }
+  .topbar__right { gap: 0; }
+  .topbar__right .icon-btn { width: 36px; height: 36px; }
+  .level-status { font-size: .7rem; }
+  .level-status__streak, .level-status__level { min-height: 27px; }
   .btn--lg { min-height: 50px; padding: 0 22px; } .savebar { border-radius: var(--r-lg); flex-direction: column; align-items: stretch; padding: 14px; }
 }
 

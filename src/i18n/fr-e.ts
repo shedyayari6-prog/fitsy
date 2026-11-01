@@ -1,5 +1,9 @@
 /** French dictionary, part 5 (Fitsy Store credit). Add `...frE` to fr.ts. */
 export const frE: Record<string, string> = {
+  "Promo ad": "Publicité promotionnelle",
+  "Promo ad sound": "Son de la publicité",
+  "Play a sound when the promo ad appears.": "Émettre un son à l’apparition de la publicité.",
+  "WhatsApp support": "Assistance WhatsApp",
   "Store credit": "Crédit store",
   "Loading…": "Chargement…",
   "Could not load your credit.": "Impossible de charger ton crédit.",

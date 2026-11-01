@@ -1,0 +1,373 @@
+/* ---------------------------------------------------------------
+   Fitsy promo ad. Colors are taken from the mascot (sage + cream).
+   If your site already has CSS variables, point these at them.
+---------------------------------------------------------------- */
+.fpa {
+  --fpa-sage: #6f8f5f;
+  --fpa-sage-light: #dfe9d3;
+  --fpa-forest: #2e4a33;
+  --fpa-cream: #f6ead0;
+  --fpa-cream-light: #fffaf0;
+  --fpa-ink: #24362a;
+  --fpa-accent: #f0b64a;
+
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 2147483000;
+  width: min(460px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  overflow: visible;
+
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 22px 22px 22px 14px;
+  box-sizing: border-box;
+
+  color: var(--fpa-ink);
+  font-family: inherit;
+  background:
+    radial-gradient(120% 90% at 0% 100%, var(--fpa-sage-light) 0%, transparent 60%),
+    linear-gradient(145deg, var(--fpa-cream-light) 0%, var(--fpa-cream) 100%);
+  border: 2px solid #fff;
+  border-radius: 28px;
+  box-shadow:
+    0 2px 0 rgba(46, 74, 51, 0.12),
+    0 18px 40px -8px rgba(46, 74, 51, 0.45),
+    0 0 0 6px rgba(111, 143, 95, 0.18);
+  animation: fpa-card-in 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.fpa *,
+.fpa *::before,
+.fpa *::after {
+  box-sizing: border-box;
+}
+
+/* ---------- close button ---------- */
+.fpa__close {
+  position: absolute;
+  top: -12px;
+  right: -8px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: #fff;
+  background: var(--fpa-forest);
+  border: 3px solid var(--fpa-cream-light);
+  border-radius: 50%;
+  box-shadow: 0 6px 14px -4px rgba(46, 74, 51, 0.6);
+  cursor: pointer;
+  z-index: 3;
+  touch-action: manipulation;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.fpa__close:hover {
+  background: #1f3524;
+  transform: rotate(90deg) scale(1.06);
+}
+.fpa__close:active {
+  transform: scale(0.92);
+}
+.fpa__close:focus-visible,
+.fpa__cta:focus-visible {
+  outline: 3px solid var(--fpa-accent);
+  outline-offset: 3px;
+}
+
+/* ---------- mascot stage ---------- */
+.fpa__stage {
+  position: relative;
+  align-self: stretch;
+  min-height: 210px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.fpa__mascot-wrap {
+  position: relative;
+  width: 130px;
+  transform-origin: 50% 100%;
+  animation: fpa-drop-in 1s cubic-bezier(0.3, 0, 0.4, 1) 0.2s both;
+}
+.fpa__mascot {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 8px 8px rgba(46, 74, 51, 0.25));
+  /* the "funny" bit: a squash, a hop and a happy wiggle, repeated */
+  animation: fpa-hop 4.2s ease-in-out 1.6s infinite;
+}
+.fpa__shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  width: 80%;
+  height: 12px;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgba(46, 74, 51, 0.3), transparent);
+  z-index: -1;
+}
+
+.fpa__stitch {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: -10px;
+  width: calc(100% - 8px);
+  height: 6px;
+  color: var(--fpa-sage);
+  opacity: 0.7;
+}
+
+/* speech bubble */
+.fpa__bubble {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--fpa-forest);
+  background: #fff;
+  border-radius: 14px 14px 14px 4px;
+  box-shadow: 0 6px 12px -4px rgba(46, 74, 51, 0.35);
+  transform-origin: 0% 100%;
+  animation:
+    fpa-pop 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) 1.5s both,
+    fpa-float 3s ease-in-out 2s infinite;
+  z-index: 2;
+}
+
+/* floating icons */
+.fpa__icon {
+  position: absolute;
+  color: var(--fpa-sage);
+  opacity: 0;
+  animation:
+    fpa-pop 0.55s cubic-bezier(0.2, 1.6, 0.4, 1) both,
+    fpa-float 3.4s ease-in-out infinite;
+}
+.fpa__icon--shirt {
+  width: 34px;
+  top: 34px;
+  right: -4px;
+  color: var(--fpa-forest);
+  animation-delay: 1.7s, 2.3s;
+}
+.fpa__icon--star {
+  width: 20px;
+  top: 12px;
+  right: 22px;
+  color: var(--fpa-accent);
+  animation-delay: 1.85s, 2.5s;
+}
+.fpa__icon--star2 {
+  width: 15px;
+  top: 96px;
+  left: -2px;
+  color: var(--fpa-accent);
+  animation-delay: 2s, 2.7s;
+}
+.fpa__icon--needle {
+  width: 32px;
+  top: 128px;
+  right: -8px;
+  color: var(--fpa-forest);
+  animation-delay: 2.15s, 2.9s;
+}
+.fpa__thread {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: fpa-sew 2.6s ease-in-out 2.4s infinite;
+}
+
+/* ---------- text ---------- */
+.fpa__body {
+  min-width: 0;
+  padding-right: 4px;
+}
+.fpa__title {
+  margin: 0 0 8px;
+  font-size: 1.3rem;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--fpa-forest);
+  animation: fpa-slide 0.6s ease-out 0.7s both;
+}
+.fpa__text {
+  margin: 0 0 14px;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: var(--fpa-ink);
+  opacity: 0.85;
+  animation: fpa-slide 0.6s ease-out 0.9s both;
+}
+.fpa__label {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--fpa-sage);
+  animation: fpa-slide 0.6s ease-out 1.1s both;
+}
+
+/* ---------- WhatsApp number (clickable) ---------- */
+.fpa__cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  min-height: 48px;
+  padding: 10px 18px;
+  overflow: hidden;
+  text-decoration: none;
+  color: #fff;
+  background: linear-gradient(180deg, #3d6445, var(--fpa-forest));
+  border-radius: 999px;
+  box-shadow:
+    0 4px 0 #1b2f20,
+    0 12px 18px -6px rgba(46, 74, 51, 0.6);
+  touch-action: manipulation;
+  animation:
+    fpa-slide 0.6s ease-out 1.3s both,
+    fpa-attention 2.8s ease-in-out 2.4s infinite;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.fpa__cta::after {
+  /* shine sweep */
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -60%;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-20deg);
+  animation: fpa-shine 2.8s ease-in-out 2.4s infinite;
+}
+.fpa__cta:hover {
+  transform: translateY(-2px);
+}
+.fpa__cta:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #1b2f20, 0 6px 10px -4px rgba(46, 74, 51, 0.6);
+}
+.fpa__number {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* ---------- keyframes ---------- */
+@keyframes fpa-card-in {
+  from { opacity: 0; transform: translateY(40px) scale(0.92); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fpa-drop-in {
+  0%   { transform: translateY(-260px) scale(0.9, 1.1); opacity: 0; }
+  45%  { transform: translateY(0) scale(1.12, 0.86); opacity: 1; }
+  62%  { transform: translateY(-38px) scale(0.95, 1.06); }
+  78%  { transform: translateY(0) scale(1.06, 0.94); }
+  90%  { transform: translateY(-10px) scale(1); }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes fpa-hop {
+  0%, 55%, 100% { transform: none; }
+  60% { transform: scale(1.08, 0.9); }
+  68% { transform: translateY(-22px) rotate(-6deg) scale(0.97, 1.05); }
+  76% { transform: translateY(0) rotate(0) scale(1.07, 0.92); }
+  82% { transform: rotate(-5deg); }
+  88% { transform: rotate(5deg); }
+  94% { transform: rotate(-3deg); }
+}
+@keyframes fpa-pop {
+  0%   { opacity: 0; transform: scale(0) rotate(-20deg); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes fpa-float {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 -6px; }
+}
+@keyframes fpa-sew {
+  0%       { stroke-dashoffset: 60; }
+  60%, 100% { stroke-dashoffset: 0; }
+}
+@keyframes fpa-slide {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fpa-attention {
+  0%, 60%, 100% { transform: scale(1); }
+  66% { transform: scale(1.07) rotate(-1.5deg); }
+  72% { transform: scale(1.07) rotate(1.5deg); }
+  78% { transform: scale(1.07) rotate(-1deg); }
+  84% { transform: scale(1); }
+}
+@keyframes fpa-shine {
+  0%, 55%  { left: -60%; }
+  80%, 100% { left: 130%; }
+}
+
+/* ---------- tablets ---------- */
+@media (max-width: 768px) {
+  .fpa {
+    right: 14px;
+    bottom: 14px;
+  }
+}
+
+/* ---------- phones ---------- */
+@media (max-width: 520px) {
+  .fpa {
+    right: 12px;
+    left: 12px;
+    bottom: 12px;
+    width: auto;
+    grid-template-columns: 104px 1fr;
+    gap: 4px;
+    padding: 18px 16px 16px 8px;
+    border-radius: 24px;
+    overflow-y: auto;
+    overflow-x: visible;
+  }
+  .fpa__stage { min-height: 150px; }
+  .fpa__mascot-wrap { width: 92px; }
+  .fpa__title { font-size: 1.05rem; margin-bottom: 6px; }
+  .fpa__text { font-size: 0.8rem; margin-bottom: 10px; }
+  .fpa__label { font-size: 0.72rem; }
+  .fpa__cta { padding: 9px 14px; gap: 8px; min-height: 44px; }
+  .fpa__number { font-size: 0.92rem; }
+  .fpa__bubble { font-size: 0.7rem; padding: 4px 8px; }
+  .fpa__icon--shirt { width: 26px; top: 24px; }
+  .fpa__icon--star { width: 16px; right: 12px; }
+  .fpa__icon--star2 { top: 70px; }
+  .fpa__icon--needle { width: 24px; top: 92px; right: -4px; }
+  .fpa__close { top: -10px; right: -4px; }
+}
+
+/* very small / short screens */
+@media (max-width: 340px), (max-height: 480px) {
+  .fpa__icon--needle,
+  .fpa__icon--star2 { display: none; }
+}
+
+/* ---------- respect reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .fpa,
+  .fpa * {
+    animation: none !important;
+    transition: none !important;
+  }
+  .fpa__icon { opacity: 1; }
+  .fpa__thread { stroke-dashoffset: 0; }
+  .fpa__cta::after { display: none; }
+}

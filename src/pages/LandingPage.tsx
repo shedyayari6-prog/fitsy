@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ArrowRight, MessageCircle, Shirt, Sparkles, Trophy, Wand2 } from 'lucide-react';
+import { ArrowRight, ExternalLink, MessageCircle, Shirt, Sparkles, Trophy, Wand2 } from 'lucide-react';
 import { brand } from '@/config/brand';
 import { Logo, LinkButton } from '@/components/ui';
 import { MascotStage } from '@/components/mascot/MascotStage';
@@ -180,6 +180,9 @@ export default function LandingPage() {
           <Link to="/privacy">{t('Privacy')}</Link>
           <Link to="/terms">{t('Terms')}</Link>
           <a href={`mailto:${brand.contactEmail}`}>{t('Contact')}</a>
+          <a href={brand.whatsappUrl} target="_blank" rel="noopener noreferrer">
+            {t('WhatsApp support')} · {brand.whatsappDisplay} <ExternalLink size={13} aria-hidden style={{ display: 'inline', verticalAlign: '-2px' }} />
+          </a>
           {brand.social.map((s) => <a key={s.href} href={s.href} rel="noreferrer noopener" target="_blank">{s.label}</a>)}
         </nav>
         <small>© {new Date().getFullYear()} {brand.name}</small>
