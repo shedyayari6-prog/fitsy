@@ -427,7 +427,6 @@ html[dir='rtl'] .gqc__tip { text-align: right; }
 html[dir='rtl'] .bars b { text-align: left; }
 html[dir='rtl'] .details ul,
 html[dir='rtl'] ol.notice__body { padding-right: 20px; padding-left: 0; }
-html[dir='rtl'] .designer-help { right: auto; left: 16px; }
 html[dir='rtl'] .language-switcher select { padding-right: 2px; padding-left: 16px; }
 
 .designer-help {
@@ -447,9 +446,12 @@ html[dir='rtl'] .language-switcher select { padding-right: 2px; padding-left: 16
   padding: 0;
   border: 0;
   background: transparent;
-  cursor: pointer;
+  cursor: grab;
   pointer-events: auto;
+  touch-action: none;
+  user-select: none;
 }
+.designer-help__image:active { cursor: grabbing; }
 .designer-help__image img { width: 100%; height: auto; object-fit: contain; }
 .designer-help__message {
   min-width: 0;
