@@ -1,5 +1,10 @@
 /** Additional Arabic UI translations for the remaining active interface strings. */
 export const arExtra: Record<string, string> = {
+  "Get the app on your phone": "ثبّت التطبيق على هاتفك",
+  "Install Fitsy on your home screen for quick access.": "أضف Fitsy إلى الشاشة الرئيسية للوصول إليه بسرعة.",
+  "Install Fitsy app": "تثبيت تطبيق Fitsy",
+  "On iPhone or iPad, tap Share, then choose Add to Home Screen.": "على iPhone أو iPad، اضغط على «مشاركة» ثم اختر «إضافة إلى الشاشة الرئيسية».",
+  "Open your browser menu and choose Install app or Add to Home Screen.": "افتح قائمة المتصفح واختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».",
   "Promo ad": "الإعلان الترويجي",
   "Promo ad sound": "صوت الإعلان الترويجي",
   "Play a sound when the promo ad appears.": "تشغيل صوت عند ظهور الإعلان الترويجي.",

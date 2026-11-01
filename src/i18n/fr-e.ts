@@ -1,5 +1,10 @@
 /** French dictionary, part 5 (Fitsy Store credit). Add `...frE` to fr.ts. */
 export const frE: Record<string, string> = {
+  "Get the app on your phone": "Installe l’application sur ton téléphone",
+  "Install Fitsy on your home screen for quick access.": "Ajoute Fitsy à ton écran d’accueil pour y accéder rapidement.",
+  "Install Fitsy app": "Installer l’application Fitsy",
+  "On iPhone or iPad, tap Share, then choose Add to Home Screen.": "Sur iPhone ou iPad, touche Partager, puis choisis Sur l’écran d’accueil.",
+  "Open your browser menu and choose Install app or Add to Home Screen.": "Ouvre le menu du navigateur et choisis Installer l’application ou Ajouter à l’écran d’accueil.",
   "Promo ad": "Publicité promotionnelle",
   "Promo ad sound": "Son de la publicité",
   "Play a sound when the promo ad appears.": "Émettre un son à l’apparition de la publicité.",

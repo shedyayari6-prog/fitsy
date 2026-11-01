@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ExternalLink, MapPin, Search } from 'lucide-react';
+import { Download, ExternalLink, MapPin, Search } from 'lucide-react';
 import { useApp } from '@/hooks/useApp';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
@@ -13,6 +13,11 @@ import { getWeatherProvider, type GeoResult } from '@/lib/weather';
 import { errMessage } from '@/lib/util';
 import type { Profile, SavedOutfit } from '@/types';
 
+interface InstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+}
+
 export default function ProfilePage() {
   const { profile, saveProfile } = useApp();
   const { user } = useAuth();
@@ -24,10 +29,29 @@ export default function ProfilePage() {
   const [cityQuery, setCityQuery] = useState('');
   const [results, setResults] = useState<GeoResult[] | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);
+  const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
+  const [installed, setInstalled] = useState(false);
+  const [installHelp, setInstallHelp] = useState<string | null>(null);
   const provider = getWeatherProvider();
 
   useEffect(() => { if (profile && !draft) setDraft(profile); }, [profile, draft]);
   useEffect(() => { void listSavedOutfits(user!.id).then(setSaved).catch(() => setSaved([])); }, [user]);
+  useEffect(() => {
+    const standalone = window.matchMedia('(display-mode: standalone)').matches ||
+      (navigator as Navigator & { standalone?: boolean }).standalone === true;
+    setInstalled(standalone);
+    const onPrompt = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event as InstallPromptEvent);
+    };
+    const onInstalled = () => { setInstalled(true); setInstallPrompt(null); setInstallHelp(null); };
+    window.addEventListener('beforeinstallprompt', onPrompt);
+    window.addEventListener('appinstalled', onInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onPrompt);
+      window.removeEventListener('appinstalled', onInstalled);
+    };
+  }, []);
 
   const topStyles = useMemo(() => {
     const m = new Map<string, number>();
@@ -65,9 +89,32 @@ export default function ProfilePage() {
     } catch (e) { setGeoError(errMessage(e, t('Location search failed.'))); }
   };
 
+  const installApp = async () => {
+    if (!installPrompt) {
+      const isAppleMobile = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      setInstallHelp(isAppleMobile
+        ? t('On iPhone or iPad, tap Share, then choose Add to Home Screen.')
+        : t('Open your browser menu and choose Install app or Add to Home Screen.'));
+      return;
+    }
+    await installPrompt.prompt();
+    const choice = await installPrompt.userChoice;
+    if (choice.outcome === 'accepted') setInstalled(true);
+    setInstallPrompt(null);
+  };
+
   return (
     <div className="page">
       <header className="page__head"><h1>{t('Your style profile')}</h1><p className="muted">{t('These answers shape every suggestion. Change them any time.')}</p></header>
+
+      {!installed && <section className="card stack-sm" aria-labelledby="install-app-title">
+        <h2 id="install-app-title" className="card__title">{t('Get the app on your phone')}</h2>
+        <p className="muted small">{t('Install Fitsy on your home screen for quick access.')}</p>
+        <div className="row">
+          <Button variant="soft" icon={<Download size={16} />} onClick={() => void installApp()}>{t('Install Fitsy app')}</Button>
+        </div>
+        {installHelp && <p className="field__hint" role="status">{installHelp}</p>}
+      </section>}
 
       <MascotMessage mood="happy" action={topStyles.length ? 'recommending' : 'idle'}>
         {topStyles.length ? t("You save {style} looks the most. I'll keep that in mind.", { style: topStyles[0][0].toLowerCase() }) : t("Save a few outfits and I'll show which styles you gravitate to.")}
