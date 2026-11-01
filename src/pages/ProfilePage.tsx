@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { MapPin, Search } from 'lucide-react';
+import { ExternalLink, MapPin, Search } from 'lucide-react';
 import { useApp } from '@/hooks/useApp';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
@@ -84,7 +84,7 @@ export default function ProfilePage() {
         <div className="grid-2">
           <Field label={t('Name or nickname')} htmlFor="p-name"><Input id="p-name" value={draft.display_name ?? ''} maxLength={60} onChange={(e) => set({ display_name: e.target.value })} /></Field>
           <Field label={t('Language')} htmlFor="p-lang"
-            hint={UI_LANGUAGES.includes(draft.preferred_language) ? undefined : t("Sage's replies will use this language. The app interface is available in English and Français for now.")}>
+            hint={UI_LANGUAGES.includes(draft.preferred_language) ? undefined : t("Sage's replies will use this language. The app interface is available in English, Français and Arabic for now.")}>
             <Select id="p-lang" value={draft.preferred_language} onChange={(e) => { set({ preferred_language: e.target.value }); setLang(e.target.value); }}>
               {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
             </Select>
@@ -130,6 +130,7 @@ export default function ProfilePage() {
         <span className="muted small">{dirty ? t('You have unsaved changes.') : t('All changes saved.')}</span>
         <Button onClick={() => void save()} loading={saving} disabled={!dirty}>{t('Save changes')}</Button>
       </div>
+      <p className="muted small"><a href="https://vintrexshop.store" target="_blank" rel="noopener noreferrer">Vintrex Shop <ExternalLink size={13} aria-hidden style={{ verticalAlign: '-2px' }} /></a></p>
     </div>
   );
 }

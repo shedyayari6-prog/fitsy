@@ -123,7 +123,7 @@ export default function OnboardingPage() {
                   <Field label={t("Language")} htmlFor="lang"
                     hint={UI_LANGUAGES.includes(p.preferred_language)
                       ? t("The whole app and Sage's replies switch to this language right away.")
-                      : t("Sage's replies will use this language. The app interface is available in English and Français for now.")}>
+                      : t("Sage's replies will use this language. The app interface is available in English, Français and Arabic for now.")}>
                     <Select id="lang" value={p.preferred_language} onChange={(e) => { set({ preferred_language: e.target.value }); setLang(e.target.value); }}>
                       {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
                     </Select>

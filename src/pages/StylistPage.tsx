@@ -13,6 +13,7 @@ import { Button, Chip, SetupNotice, Skeleton } from '@/components/ui';
 import { MascotStage } from '@/components/mascot/MascotStage';
 import { Bubble, Composer, TypingIndicator } from '@/components/chat/Chat';
 import { OutfitCard } from '@/components/outfit/OutfitCard';
+import { StorePicks } from '@/components/store/StorePicks';
 import { StylistError, sendToStylist } from '@/lib/ai-stylist';
 import { deleteConversation, getMessages, listConversations, removeSavedOutfit, saveOutfit } from '@/lib/data';
 import { STYLER_PROMPTS } from '@/config/options';
@@ -225,9 +226,12 @@ export default function StylistPage() {
                   {m.structured.outfits.map((o, i) => {
                     const key = `${m.id}:${i}`;
                     return (
-                      <OutfitCard key={key} outfit={o} saved={!!saved[key]} saving={savingKey === key}
-                        onSave={() => void toggleSave(key, o)} onUnsave={() => void toggleSave(key, o)}
-                        onAsk={() => setInput(t('Tell me more about "{name}". How would I wear it?', { name: o.name }))} />
+                      <div key={key} className="ocard-wrap">
+                        <OutfitCard outfit={o} saved={!!saved[key]} saving={savingKey === key}
+                          onSave={() => void toggleSave(key, o)} onUnsave={() => void toggleSave(key, o)}
+                          onAsk={() => setInput(t('Tell me more about "{name}". How would I wear it?', { name: o.name }))} />
+                        <StorePicks outfit={o} />
+                      </div>
                     );
                   })}
                 </motion.div>

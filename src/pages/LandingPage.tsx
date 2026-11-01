@@ -9,15 +9,14 @@ import { Mascot } from '@/components/mascot/Mascot';
 import { OutfitVisual } from '@/components/outfit/OutfitCard';
 import { fadeUp, stagger } from '@/lib/animations';
 import { useAuth } from '@/hooks/useAuth';
-import { useT, UI_LANGUAGES } from '@/i18n';
-import { LANGUAGES } from '@/config/options';
+import { useT } from '@/i18n';
 import type { OutfitData } from '@/types';
 
 type ExampleKey = 'Date' | 'Interview' | 'University';
 
 export default function LandingPage() {
   const { user } = useAuth();
-  const { t, lang, setLang } = useT();
+  const { t, lang } = useT();
   const [pick, setPick] = useState<ExampleKey>('Date');
   const cta = user ? '/app' : '/auth?mode=signup';
 
@@ -88,10 +87,6 @@ export default function LandingPage() {
           <a href="#preview">{t('Preview')}</a>
         </nav>
         <div className="row">
-          <label className="sr-only" htmlFor="lang-pick">{t('Language')}</label>
-          <select id="lang-pick" className="input input--compact" value={lang} onChange={(e) => setLang(e.target.value)}>
-            {LANGUAGES.filter((l) => UI_LANGUAGES.includes(l.code)).map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
-          </select>
           <Link to={user ? '/app' : '/auth'} className="btn btn--soft btn--sm">{user ? t('Open app') : t('Sign in')}</Link>
         </div>
       </header>

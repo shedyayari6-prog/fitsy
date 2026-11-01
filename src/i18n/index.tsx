@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { fr } from './fr';
+import { ar } from './ar';
 
 /**
  * Tiny i18n layer. The English text IS the key: t('Find Your Style').
@@ -7,7 +8,7 @@ import { fr } from './fr';
  * - Placeholders use {name}: t('Hi {name}', { name }).
  * To add a language: create src/i18n/<code>.ts exporting a Record<string,string> and register it in DICTS.
  */
-const DICTS: Record<string, Record<string, string>> = { fr };
+const DICTS: Record<string, Record<string, string>> = { fr, ar };
 
 /** Languages whose interface is translated. Others still get Sage's replies in that language. */
 export const UI_LANGUAGES = ['en', ...Object.keys(DICTS)];
@@ -35,6 +36,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
     try { localStorage.setItem(KEY, lang); } catch { /* ignore */ }
   }, [lang]);
 

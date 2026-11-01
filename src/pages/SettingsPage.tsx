@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BellRing, Download, LogOut, Mail, Trash2 } from 'lucide-react';
+import { BellRing, Download, ExternalLink, LogOut, Mail, Trash2 } from 'lucide-react';
 import { useApp } from '@/hooks/useApp';
 import { useAuth } from '@/hooks/useAuth';
 import { useSettings } from '@/hooks/useSettings';
@@ -88,7 +88,7 @@ export default function SettingsPage() {
         <Field label={t('Language')} htmlFor="s-lang"
           hint={UI_LANGUAGES.includes(profile.preferred_language)
             ? t("The whole app and Sage's replies use this language.")
-            : t("Sage's replies will use this language. The app interface is available in English and Français for now.")}>
+            : t("Sage's replies will use this language. The app interface is available in English, Français and Arabic for now.")}>
           <Select id="s-lang" value={profile.preferred_language}
             onChange={(e) => { const code = e.target.value; setLang(code); void run('lang', async () => { await saveProfile({ preferred_language: code }); }, t('Language updated.')); }}>
             {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
@@ -176,6 +176,7 @@ export default function SettingsPage() {
             onClick={() => void run('pw', async () => { const e = await requestReset(user.email!); if (e) throw new Error(e); }, t('Password reset email sent.'))}>{t('Change password')}</Button>}
           <Button variant="ghost" icon={<LogOut size={16} />} onClick={() => void signOut().then(() => nav('/', { replace: true }))}>{t('Sign out')}</Button>
         </div>
+        <p className="muted small"><a href="https://vintrexshop.store" target="_blank" rel="noopener noreferrer">Vintrex Shop <ExternalLink size={13} aria-hidden style={{ verticalAlign: '-2px' }} /></a></p>
       </section>
 
       <Modal open={delOpen} onClose={() => setDelOpen(false)} title={t('Delete your account?')}>

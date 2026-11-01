@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { Award, Flame, Footprints, Heart, MessageCircle, Shirt, Sparkles, Trophy, type LucideIcon } from 'lucide-react';
+import { Award, Coins, Flame, Footprints, Heart, MessageCircle, Shirt, Sparkles, Trophy, type LucideIcon } from 'lucide-react';
 import { useApp } from '@/hooks/useApp';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
@@ -76,7 +76,9 @@ export default function ChallengesPage() {
 
   return (
     <div className="page">
-      <header className="page__head"><h1>{t('Quests')}</h1><p className="muted">{t('Small actions, real progress. XP is only awarded after the app verifies you did the thing.')}</p></header>
+      <header className="page__head"><h1>{t('Quests')}</h1><p className="muted">{t('Small actions, real progress. XP and quest coins are only awarded after the app verifies the action.')}</p>
+        <p className="muted small"><Coins size={16} aria-hidden style={{ verticalAlign: '-3px' }} /> {progress?.quest_coins ?? 0} {t('quest coins')}</p>
+      </header>
 
       {error && <ErrorNotice message={error} onRetry={() => void load()} />}
 

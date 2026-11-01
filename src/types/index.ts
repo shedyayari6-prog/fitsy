@@ -49,6 +49,8 @@ export interface OutfitPiece {
   color?: string;
   fromWardrobe: boolean;
   wardrobeItemId?: string;
+  /** A live Fitsy Store listing recommended by the stylist for this piece. */
+  storeListingId?: string;
 }
 export interface OutfitData {
   name: string;
@@ -101,6 +103,7 @@ export interface Conversation {
 export interface Progress {
   user_id: string;
   total_xp: number;
+  quest_coins: number;
   level: number;
   current_streak: number;
   longest_streak: number;
@@ -137,6 +140,7 @@ export interface CompleteResult {
   reason?: 'unknown_quest' | 'requirements_not_met' | 'already_completed';
   quest?: string;
   xp?: number;
+  quest_coins?: number;
   xp_total_gain?: number;
   total_xp?: number;
   level?: number;

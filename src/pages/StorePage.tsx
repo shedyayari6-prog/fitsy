@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { Flag, Phone, Plus, Search, Store as StoreIcon } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Flag, Gift, Phone, Plus, Search, Store as StoreIcon, Tag as TagIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useApp } from '@/hooks/useApp';
 import { useToast } from '@/hooks/useToast';
@@ -9,9 +10,11 @@ import { Button, CardSkeleton, Chip, EmptyState, ErrorNotice, Field, Input, Moda
 import { MascotMessage } from '@/components/mascot/MascotMessage';
 import { ListingCard, StoreImage, money } from '@/components/store/StoreBits';
 import { SellForm } from '@/components/store/SellForm';
+import { SaleForm } from '@/components/store/SaleForm';
+import { CreditPanel } from '@/components/store/CreditPanel';
 import { CATEGORY_OPTIONS } from '@/config/options';
 import {
-  CONDITIONS, CONTACT_TYPES, approximateLocation, countryName, daysLeft, deleteListing, listStore, matchListing,
+  CONDITIONS, CONTACT_TYPES, approximateLocation, clearLiveListings, countryName, daysLeft, deleteListing, getCreditBalance, isStoreAdmin, listStore, matchListing,
   reportListing, revealContact, setListingStatus, type Geo,
 } from '@/lib/store';
 import { supabase } from '@/lib/supabase';
@@ -47,6 +50,12 @@ export default function StorePage() {
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('');
   const [sellOpen, setSellOpen] = useState(false);
+  const [admin, setAdmin] = useState(false);
+  const [balance, setBalance] = useState(0);
+  const [rewardsOpen, setRewardsOpen] = useState(false);
+  const [saleFor, setSaleFor] = useState<StoreListing | null>(null);
+  const [params, setParams] = useSearchParams();
+  const wantedId = params.get('listing');
   const [open, setOpen] = useState<StoreListing | null>(null);
   const [contact, setContact] = useState<{ type: ContactType; value: string } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -56,9 +65,21 @@ export default function StorePage() {
 
   const load = useCallback(async () => {
     setError(null);
+    clearLiveListings();
     try { setItems(await listStore()); } catch (e) { setError(errMessage(e, t('Could not load the store.'))); }
   }, [t]);
   useEffect(() => { if (!demo) void load(); }, [load, demo]);
+  useEffect(() => { if (!demo) void isStoreAdmin().then(setAdmin); }, [demo]);
+  useEffect(() => { if (!demo) void getCreditBalance().then(setBalance).catch(() => setBalance(0)); }, [demo]);
+
+  // A link such as /app/store?listing=<id> (from the stylist's store picks) opens that piece.
+  useEffect(() => {
+    if (!wantedId || items === null) return;
+    const l = items.find((x) => x.id === wantedId);
+    if (l) { setOpen(l); setContact(null); setReporting(false); setTab('all'); }
+    else toast(t('That piece is no longer available.'), 'info');
+    setParams({}, { replace: true });
+  }, [wantedId, items]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     try { localStorage.setItem(GEO_PREF, useGeo ? '1' : '0'); } catch { /* ignore */ }
@@ -125,8 +146,11 @@ export default function StorePage() {
   return (
     <div className="page">
       <header className="page__head row-between">
-        <div><h1>{t('Fitsy Store')}</h1><p className="muted">{t('Buy and sell second-hand pieces. Listings stay online for 30 days.')}</p></div>
-        <Button icon={<Plus size={16} />} onClick={() => setSellOpen(true)}>{t('Sell a piece')}</Button>
+        <div><h1>{t('Fitsy Store')}</h1><p className="muted">{admin ? t('Buy and sell second-hand pieces. Listings stay online for 30 days.') : t('Second-hand pieces picked by the Fitsy team. Listings stay online for 30 days.')}</p></div>
+        <div className="row">
+          <Button variant="soft" icon={<Gift size={16} />} onClick={() => setRewardsOpen(true)}>{t('Store credit')} · {balance}</Button>
+          {admin && <Button icon={<Plus size={16} />} onClick={() => setSellOpen(true)}>{t('Sell a piece')}</Button>}
+        </div>
       </header>
 
       <MascotMessage mood="happy" action="recommending">
@@ -144,7 +168,7 @@ export default function StorePage() {
       </label>
 
       <div className="tabs" role="tablist" aria-label={t('Store sections')}>
-        {([['foryou', 'For you'], ['all', 'All listings'], ['mine', 'My listings']] as [Tab, string][]).map(([k, label]) => (
+        {([['foryou', 'For you'], ['all', 'All listings'], ['mine', 'My listings']] as [Tab, string][]).filter(([k]) => k !== 'mine' || admin).map(([k, label]) => (
           <Chip key={k} selected={tab === k} onClick={() => setTab(k)}>{t(label)}</Chip>
         ))}
       </div>
@@ -168,9 +192,9 @@ export default function StorePage() {
           title={tab === 'mine' ? t('You have nothing for sale') : tab === 'foryou' ? t('No matches yet') : t('Nothing here yet')}
           body={tab === 'mine' ? t('Sell a piece you no longer wear. It takes two minutes.')
             : tab === 'foryou' ? t('Complete your style profile or browse all listings. New pieces are added every day.')
-            : t('Be the first to list something.')}
+            : admin ? t('Be the first to list something.') : t('Nothing for sale right now. Check back soon.')}
           action={tab === 'foryou' ? <Button variant="soft" onClick={() => setTab('all')}>{t('Browse all listings')}</Button>
-            : <Button icon={<StoreIcon size={16} />} onClick={() => setSellOpen(true)}>{t('Sell a piece')}</Button>} />
+            : admin ? <Button icon={<StoreIcon size={16} />} onClick={() => setSellOpen(true)}>{t('Sell a piece')}</Button> : undefined} />
       )}
 
       {items && shown.length > 0 && (
@@ -179,8 +203,14 @@ export default function StorePage() {
         </motion.ul>
       )}
 
-      <SellForm open={sellOpen} uid={uid} profile={profile} onClose={() => setSellOpen(false)}
-        onCreated={() => { setSellOpen(false); toast(t('Your listing is live for 30 days.'), 'success'); setTab('mine'); void load(); }} />
+      {admin && (
+        <SellForm open={sellOpen} uid={uid} profile={profile} onClose={() => setSellOpen(false)}
+          onCreated={() => { setSellOpen(false); toast(t('Your listing is live for 30 days.'), 'success'); setTab('mine'); void load(); }} />
+      )}
+
+      <CreditPanel open={rewardsOpen} onClose={() => setRewardsOpen(false)} onBalance={setBalance} />
+      {admin && <SaleForm listing={saleFor} onClose={() => setSaleFor(null)}
+        onDone={() => { setSaleFor(null); setOpen(null); toast(t('Sale recorded'), 'success'); void load(); }} />}
 
       <Modal open={!!open} onClose={() => setOpen(null)} title={open?.title ?? ''}>
         {open && (
@@ -207,6 +237,7 @@ export default function StorePage() {
 
             {mine ? (
               <div className="row-end">
+                {open.status === 'active' && <Button icon={<TagIcon size={16} />} onClick={() => { setSaleFor(open); setOpen(null); }}>{t('Record a sale')}</Button>}
                 <Button variant="soft" loading={busy === 'sold'} onClick={() => void sold(open)}>{open.status === 'sold' ? t('Mark as available') : t('Mark as sold')}</Button>
                 <Button variant="danger" loading={busy === 'del'} onClick={() => void remove(open)}>{t('Delete listing')}</Button>
               </div>

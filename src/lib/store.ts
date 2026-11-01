@@ -57,6 +57,14 @@ export async function removeStoreImage(path: string): Promise<void> {
   if (supabase) await supabase.storage.from('store').remove([path]);
 }
 
+/** True when the signed-in user is a store admin. Only admins can publish listings (enforced by the database). */
+export async function isStoreAdmin(): Promise<boolean> {
+  if (!supabase) return false;
+  const { data, error } = await supabase.rpc('is_store_admin');
+  if (error) return false;
+  return data === true;
+}
+
 export async function createListing(uid: string, d: StoreDraft, image_path: string): Promise<void> {
   const { data, error } = await sb().from('store_listings').insert({
     seller_id: uid, title: d.title.trim(), category: d.category, style_tags: d.style_tags, color: d.color.trim(), size: d.size.trim(),
@@ -64,6 +72,7 @@ export async function createListing(uid: string, d: StoreDraft, image_path: stri
     seller_name: d.seller_name.trim(), seller_info: d.seller_info.trim(), country: d.country, city: d.city.trim(), image_path,
   }).select('id').single();
   if (error) {
+    if (/admins_only/.test(error.message)) throw new Error('Only store admins can add listings.');
     if (/listing_limit/.test(error.message)) throw new Error('You already have 10 live listings. Remove one or wait for it to expire.');
     throw error;
   }
@@ -137,3 +146,89 @@ export function matchListing(l: StoreListing, p: Profile | null, geo: Geo): Matc
   if (city && l.city.trim().toLowerCase() === city) { score += 2; reasons.push('In your city'); }
   return { score, reasons };
 }
+
+// ── store credit ───────────────────────────────────────────────────────────────
+export interface CreditTier { percent: number; cost: number }
+export interface Coupon { id: string; percent: number; code: string; cost: number; expires_at: string; used_at: string | null }
+export interface LedgerRow { id: number; delta: number; reason: 'purchase' | 'coupon'; created_at: string }
+export interface CreditSummary { balance: number; tiers: CreditTier[]; coupons: Coupon[]; ledger: LedgerRow[] }
+export interface SaleResult { final_price: number; discount: number; currency: string; points: number }
+
+export const MAX_COUPONS = 3;
+export const couponState = (c: Coupon): 'active' | 'used' | 'expired' =>
+  c.used_at ? 'used' : new Date(c.expires_at).getTime() <= Date.now() ? 'expired' : 'active';
+
+/** Only the signed-in user's own rows come back (row level security). */
+export async function getCreditSummary(): Promise<CreditSummary> {
+  const c = sb();
+  const [a, t, cp, l] = await Promise.all([
+    c.from('store_credit_accounts').select('balance').maybeSingle(),
+    c.from('store_credit_tiers').select('percent, cost').order('percent'),
+    c.from('store_coupons').select('id, percent, code, cost, expires_at, used_at').order('created_at', { ascending: false }).limit(20),
+    c.from('store_credit_ledger').select('id, delta, reason, created_at').order('created_at', { ascending: false }).limit(10),
+  ]);
+  for (const r of [a, t, cp, l]) if (r.error) throw r.error;
+  return {
+    balance: (a.data as { balance: number } | null)?.balance ?? 0,
+    tiers: (t.data ?? []) as CreditTier[],
+    coupons: (cp.data ?? []) as Coupon[],
+    ledger: (l.data ?? []) as LedgerRow[],
+  };
+}
+
+export async function getCreditBalance(): Promise<number> {
+  if (!supabase) return 0;
+  const { data } = await supabase.from('store_credit_accounts').select('balance').maybeSingle();
+  return (data as { balance: number } | null)?.balance ?? 0;
+}
+
+export async function exchangeQuestCoins(): Promise<{ questCoins: number; balance: number; converted: number }> {
+  const { data, error } = await sb().rpc('gq_exchange_coins');
+  if (error) throw error;
+  if (!data?.ok) {
+    if (data?.reason === 'not_enough') throw new Error('You need at least 10 quest coins to exchange.');
+    throw new Error('Could not exchange quest coins.');
+  }
+  return { questCoins: data.coins, balance: data.balance, converted: data.converted };
+}
+
+export async function redeemCoupon(percent: number): Promise<{ code: string; balance: number }> {
+  const { data, error } = await sb().rpc('store_redeem', { p_percent: percent });
+  if (error) throw error;
+  if (!data?.ok) {
+    if (data?.reason === 'not_enough') throw new Error('You do not have enough credit points yet.');
+    if (data?.reason === 'too_many') throw new Error('You already hold 3 unused coupons. Use one first.');
+    throw new Error('Could not create that coupon.');
+  }
+  return { code: data.code, balance: data.balance };
+}
+
+/** Admin only. Marks the listing sold to the buyer, applies their coupon if given, and credits the buyer. */
+export async function completeSale(listingId: string, buyerEmail: string, code: string): Promise<SaleResult> {
+  const { data, error } = await sb().rpc('store_complete_sale', { p_listing: listingId, p_buyer_email: buyerEmail.trim(), p_code: code.trim() || null });
+  if (error) throw error;
+  if (!data?.ok) {
+    const m: Record<string, string> = {
+      buyer_not_found: 'No buyer found with that email.', bad_coupon: 'That coupon is not valid for this buyer.',
+      self_sale: 'You cannot record a sale to yourself.', listing_unavailable: 'This listing is no longer available.',
+      forbidden: 'Only store admins can record a sale.', no_rate: 'This currency is not set up for store credit.',
+    };
+    throw new Error(m[data?.reason as string] ?? 'Could not record this sale.');
+  }
+  return { final_price: data.final_price, discount: data.discount, currency: data.currency, points: data.points };
+}
+
+// ── shared cache of live listings (used by the stylist's store picks) ──────────
+let liveCache: { at: number; data: StoreListing[] } | null = null;
+let liveInflight: Promise<StoreListing[]> | null = null;
+
+/** Live listings, cached for 60 seconds so several outfit cards share one request. Empty when there is no store. */
+export async function liveListings(): Promise<StoreListing[]> {
+  if (!supabase) return [];
+  if (liveCache && Date.now() - liveCache.at < 60_000) return liveCache.data;
+  liveInflight ??= listStore().then((d) => { liveCache = { at: Date.now(), data: d }; return d; }).finally(() => { liveInflight = null; });
+  return liveInflight;
+}
+
+/** Drop the cache after a listing changes (sold, deleted, created). */
+export const clearLiveListings = () => { liveCache = null; };

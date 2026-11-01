@@ -15,7 +15,7 @@ export function QuestRow({ quest, done, busy, onCheck, goTo }:
         <span>{t(quest.description)}</span>
         {!done && goTo && <Link className="link-btn" to={goTo}>{t('Go there →')}</Link>}
       </div>
-      <span className="xp-pill">{done ? t('Done') : `+${quest.xp_reward} XP`}</span>
+      <span className="xp-pill">{done ? t('Done') : t('+{xp} XP · +1 quest coin', { xp: quest.xp_reward })}</span>
       {!done && onCheck && <Button size="sm" variant="soft" loading={busy} onClick={onCheck}>{t('Check')}</Button>}
     </li>
   );

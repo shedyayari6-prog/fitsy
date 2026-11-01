@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useLocation, Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { Home, MessageCircle, Sparkles, Shirt, Trophy, User, Settings, Flame, Store, Box } from 'lucide-react';
+import { Home, MessageCircle, Sparkles, Shirt, Trophy, User, Settings, Flame, Store, Box, Compass } from 'lucide-react';
 import { Logo, DemoBanner } from '@/components/ui';
 import { XPBar } from '@/components/gamification/XPBar';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,6 +18,7 @@ const NAV: { to: string; label: string; icon: typeof Home; end?: boolean }[] = [
   { to: '/app/quests', label: 'Quests', icon: Trophy },
 ];
 const SECONDARY: { to: string; label: string; icon: typeof Home; end?: boolean }[] = [
+  { to: '/app/glowup', label: 'GlowUp Quest', icon: Compass },
   { to: '/app/avatar', label: 'My 3D Avatar', icon: Box },
   { to: '/app/profile', label: 'Profile', icon: User },
   { to: '/app/settings', label: 'Settings', icon: Settings },
@@ -25,12 +26,9 @@ const SECONDARY: { to: string; label: string; icon: typeof Home; end?: boolean }
 
 export function AppShell() {
   const { demo } = useAuth();
-  const { progress, dailyXpToday } = useApp();
+  const { progress } = useApp();
   const { t } = useT();
   const loc = useLocation();
-  const mascotMood = progress && progress.total_xp % 100 >= 80
-    ? 'excited'
-    : dailyXpToday === 0 ? 'crying' : 'waving';
 
   return (
     <div className="shell">
@@ -44,7 +42,7 @@ export function AppShell() {
           ))}
         </nav>
         <div className="sidebar__foot">
-          <Mascot size="sm" mood={mascotMood} decorative />
+          <Mascot size="sm" mood="happy" decorative />
           {progress && <XPBar progress={progress} compact />}
         </div>
       </aside>

@@ -16,9 +16,12 @@ import ProfilePage from '@/pages/ProfilePage';
 import SettingsPage from '@/pages/SettingsPage';
 import StorePage from '@/pages/StorePage';
 import AvatarPage from '@/pages/AvatarPage';
+import GlowUpPage from '@/pages/GlowUpPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import { useApp } from '@/hooks/useApp';
 import { useT } from '@/i18n';
+import { DesignerHelp } from '@/components/layout/DesignerHelp';
+import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -35,50 +38,46 @@ function LangSync() {
   return null;
 }
 
+function StandaloneLanguageSwitcher() {
+  return <div className="language-switcher__floating"><LanguageSwitcher /></div>;
+}
+
 export default function App() {
   const { t } = useT();
-
   useEffect(() => {
-    const clickSound = new Audio('/matthewvakaliuk73627-mouse-click-290204.mp3');
     const hoverSound = new Audio('/hover.mp3');
-    clickSound.preload = 'auto';
-    hoverSound.preload = 'auto';
-    clickSound.volume = 0.3;
-    hoverSound.volume = 0.25;
-
-    const play = (audio: HTMLAudioElement) => {
-      audio.currentTime = 0;
-      void audio.play().catch(() => {});
-    };
-    const findControl = (target: EventTarget | null) => target instanceof Element
-      ? target.closest<HTMLElement>('button, [role="button"], a.btn, a.link-btn')
-      : null;
-    const disabled = (control: HTMLElement) => control.getAttribute('aria-disabled') === 'true' ||
-      (control instanceof HTMLButtonElement && control.disabled);
-    const onClick = (event: MouseEvent) => {
-      const control = findControl(event.target);
-      if (control && !disabled(control)) play(clickSound);
+    const clickSound = new Audio('/matthewvakaliuk73627-mouse-click-290204.mp3');
+    const buttonFor = (target: EventTarget | null) =>
+      target instanceof Element ? target.closest<HTMLElement>('button, a.btn, .chip, [role="button"]') : null;
+    const play = (sound: HTMLAudioElement) => {
+      sound.currentTime = 0;
+      void sound.play().catch(() => undefined);
     };
     const onPointerOver = (event: PointerEvent) => {
       if (event.pointerType !== 'mouse') return;
-      const control = findControl(event.target);
-      if (!control || disabled(control) || control.contains(event.relatedTarget as Node | null)) return;
+      const button = buttonFor(event.target);
+      if (!button || button.getAttribute('aria-disabled') === 'true' || button === buttonFor(event.relatedTarget)) return;
       play(hoverSound);
     };
-
-    document.addEventListener('click', onClick, true);
-    document.addEventListener('pointerover', onPointerOver, true);
+    const onClick = (event: MouseEvent) => {
+      const button = buttonFor(event.target);
+      if (!button || button.getAttribute('aria-disabled') === 'true') return;
+      play(clickSound);
+    };
+    document.addEventListener('pointerover', onPointerOver);
+    document.addEventListener('click', onClick);
     return () => {
-      document.removeEventListener('click', onClick, true);
-      document.removeEventListener('pointerover', onPointerOver, true);
+      document.removeEventListener('pointerover', onPointerOver);
+      document.removeEventListener('click', onClick);
     };
   }, []);
-
   return (
     <>
       <a href="#main" className="skip-link">{t('Skip to content')}</a>
       <LangSync />
       <ScrollToTop />
+      <StandaloneLanguageSwitcher />
+      <DesignerHelp />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
@@ -96,6 +95,7 @@ export default function App() {
               <Route path="wardrobe" element={<WardrobePage />} />
               <Route path="store" element={<StorePage />} />
               <Route path="avatar" element={<AvatarPage />} />
+              <Route path="glowup" element={<GlowUpPage />} />
               <Route path="quests" element={<ChallengesPage />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="settings" element={<SettingsPage />} />

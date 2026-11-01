@@ -4,12 +4,14 @@
 // persists the exchange. The provider key never leaves this function.
 //
 // Secrets (supabase secrets set …): AI_API_KEY, AI_MODEL, [AI_API_URL], [ALLOWED_ORIGIN]
+// Also shows the model the live Fitsy Store listings so it can recommend real pieces (validated by id).
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
 import { corsHeaders, json } from '../_shared/cors.ts';
 
 const MAX_MESSAGE_CHARS = 1500;
 const MAX_HISTORY = 12;
 const MAX_WARDROBE_ITEMS = 60;
+const MAX_STORE_ITEMS = 40;
 const HOURLY_LIMIT = 40;
 const REFINEMENTS: Record<string, string> = {
   more_formal: 'Make the outfit more formal than your previous suggestion.',
@@ -22,6 +24,8 @@ const REFINEMENTS: Record<string, string> = {
 
 type Piece = {
   name: string; category: string; color?: string; fromWardrobe: boolean; wardrobeItemId?: string;
+  /** A live Fitsy Store listing the stylist recommends for this piece. Only ids we sent are kept. */
+  storeListingId?: string;
 };
 type Outfit = {
   name: string; occasion?: string; style?: string; pieces: Piece[]; colorPalette: string[];
@@ -36,7 +40,7 @@ const strArr = (v: unknown, maxItems = 8, max = 80): string[] =>
   Array.isArray(v) ? v.map((x) => str(x, max)).filter((x): x is string => !!x).slice(0, maxItems) : [];
 
 /** Validate + sanitise whatever the model returned. Throws on unusable output. */
-function validate(raw: unknown, wardrobeIds: Set<string>): StylistResult {
+function validate(raw: unknown, wardrobeIds: Set<string>, storeIds: Set<string> = new Set()): StylistResult {
   if (!raw || typeof raw !== 'object') throw new Error('not an object');
   const r = raw as Record<string, unknown>;
   const reply = str(r.reply, 3000);
@@ -58,12 +62,16 @@ function validate(raw: unknown, wardrobeIds: Set<string>): StylistResult {
       const id = str(pp.wardrobeItemId, 64);
       // Never trust a wardrobe id the model made up: it must be one we sent.
       const validId = id && wardrobeIds.has(id) ? id : undefined;
+      // Same rule for store listings: the model may only point at a listing we showed it.
+      const sid = str(pp.storeListingId, 64);
+      const validStoreId = !validId && sid && storeIds.has(sid) ? sid : undefined;
       pieces.push({
         name: pname,
         category: str(pp.category, 30) ?? 'other',
         color: str(pp.color, 40),
         fromWardrobe: !!validId,
         wardrobeItemId: validId,
+        storeListingId: validStoreId,
       });
     }
     if (!name || !why || pieces.length === 0) continue;
@@ -110,6 +118,7 @@ Rules:
 - Never assume the user owns anything. Only mark a piece as from their wardrobe if it appears in the WARDROBE list, and then copy its id into wardrobeItemId.
 - If key details are missing (occasion, formality, weather), you may ask ONE short clarifyingQuestion, but still offer a useful first suggestion when possible.
 - You have NOT verified prices, product availability, live weather or trends. Only mention weather if WEATHER context is provided, and call it as given. Budget notes must be rough guidance, never exact prices. Do not invent shops, brands' stock or links. Put any important uncertainty in "caveats".
+- STORE: when a piece is missing from the user's wardrobe and a listing in the STORE list genuinely fits it (category, colour, style, occasion, budget), recommend that listing: copy its id into storeListingId, set wardrobeItemId to null, and name the piece after the listing. Use a store listing at most once per outfit, and only when it really suits the look. Never invent a storeListingId and never quote a price other than the one listed.
 - Keep to fashion and styling topics.
 
 Respond with ONE JSON object only, no markdown, matching exactly:
@@ -119,7 +128,7 @@ Respond with ONE JSON object only, no markdown, matching exactly:
   "outfits": [                           // 0-3 items; empty for pure Q&A (e.g. colour advice)
     {
       "name": string, "occasion": string, "style": string,
-      "pieces": [{"name": string, "category": "tops|trousers|jeans|jackets|coats|shoes|bags|accessories|dresses|other", "color": string, "wardrobeItemId": string | null}],
+      "pieces": [{"name": string, "category": "tops|trousers|jeans|jackets|coats|shoes|bags|accessories|dresses|other", "color": string, "wardrobeItemId": string | null, "storeListingId": string | null}],
       "colorPalette": [string],           // 2-5 colour names
       "shoes": string, "accessories": [string], "outerwear": string | null,
       "whyItWorks": string, "weatherNote": string | null, "budgetNote": string | null,
@@ -212,6 +221,16 @@ Deno.serve(async (req) => {
     }
     const wardrobeIds = new Set(wardrobe.map((i) => String(i.id)));
 
+    // Live Fitsy Store listings (row level security already hides expired, sold, hidden and unavailable ones).
+    // If the store is not set up, this just comes back empty and the stylist works as before.
+    const { data: storeRows } = await supabase.from('store_listings')
+      .select('id, title, category, color, size, condition, price, currency, city, style_tags')
+      .eq('status', 'active').gt('expires_at', new Date().toISOString()).neq('seller_id', uid)
+      .order('created_at', { ascending: false }).limit(MAX_STORE_ITEMS);
+    const store = (storeRows ?? []) as Array<Record<string, unknown>>;
+    const storeIds = new Set(store.map((l) => String(l.id)));
+    const clean = (v: unknown, n = 70) => String(v ?? '').replace(/[\r\n|]+/g, ' ').trim().slice(0, n);
+
     const { data: hist } = await supabase.from('messages').select('role, content')
       .eq('conversation_id', conversationId).order('created_at', { ascending: false }).limit(MAX_HISTORY);
     const history = (hist ?? []).reverse();
@@ -229,6 +248,10 @@ Deno.serve(async (req) => {
         ? `WARDROBE (user-owned items; only these may use wardrobeItemId):\n` +
           wardrobe.map((i) => `- id=${i.id} | ${i.name} | ${i.category} | ${i.color ?? 'n/a'} | ${i.season}`).join('\n')
         : 'WARDROBE: empty or not shared',
+      store.length
+        ? `STORE (live second-hand listings; only these may use storeListingId):\n` +
+          store.map((l) => `- id=${l.id} | ${clean(l.title)} | ${l.category} | ${clean(l.color, 30)} | size ${clean(l.size, 12)} | ${l.condition} | ${l.price} ${l.currency} | ${clean(l.city, 40)}`).join('\n')
+        : 'STORE: no listings available',
     ].join('\n');
 
     const llmMessages = [
@@ -271,7 +294,7 @@ Deno.serve(async (req) => {
 
     let result: StylistResult;
     try {
-      result = validate(JSON.parse(extractJson(text)), wardrobeIds);
+      result = validate(JSON.parse(extractJson(text)), wardrobeIds, storeIds);
     } catch (e) {
       // Logs the start of the model's answer (never keys) so you can see what the model actually returned.
       console.error('ai-stylist: could not parse model answer:', e instanceof Error ? e.message : e, '| finish_reason =', payload?.choices?.[0]?.finish_reason, '| text =', text.slice(0, 400));

@@ -1,6 +1,9 @@
 /** French dictionary, part 4 (Fitsy Store). */
 export const frD: Record<string, string> = {
   "Fitsy Store": "Fitsy Store",
+  "Second-hand pieces picked by the Fitsy team. Listings stay online for 30 days.": "Des pièces de seconde main choisies par l'équipe Fitsy. Les annonces restent en ligne 30 jours.",
+  "Nothing for sale right now. Check back soon.": "Rien en vente pour le moment. Reviens bientôt.",
+  "Only store admins can add listings.": "Seuls les administrateurs du store peuvent ajouter des annonces.",
   "Buy and sell second-hand pieces. Listings stay online for 30 days.": "Achète et vends des pièces de seconde main. Les annonces restent en ligne 30 jours.",
   "Sell a piece": "Vendre une pièce",
   "Pieces that match your style, your colours and your area show up first. Check the “For you” tab.": "Les pièces qui correspondent à ton style, tes couleurs et ta région s'affichent en premier. Regarde l'onglet « Pour toi ».",

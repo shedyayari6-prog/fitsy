@@ -228,11 +228,15 @@ export async function setFavorite(uid: string, saved: SavedOutfit, value: boolea
 
 // ── gamification ──────────────────────────────────────────────────────────────
 const defaultProgress = (uid: string): Progress => ({
-  user_id: uid, total_xp: 0, level: 1, current_streak: 0, longest_streak: 0, last_activity_date: null,
+  user_id: uid, total_xp: 0, quest_coins: 0, level: 1, current_streak: 0, longest_streak: 0, last_activity_date: null,
 });
+const demoProgress = (uid: string): Progress => {
+  const saved = lget<Progress>('progress', defaultProgress(uid));
+  return { ...defaultProgress(uid), ...saved, quest_coins: saved.quest_coins ?? lget<QuestCompletion[]>('completions', []).length };
+};
 
 export async function getProgress(uid: string): Promise<Progress> {
-  if (isDemo(uid)) return lget('progress', defaultProgress(uid));
+  if (isDemo(uid)) return demoProgress(uid);
   const { data, error } = await sb().from('user_progress').select('*').eq('user_id', uid).maybeSingle();
   if (error) throw error;
   return (data as Progress | null) ?? defaultProgress(uid);
@@ -295,7 +299,7 @@ export async function completeQuest(uid: string, slug: string): Promise<Complete
   }
   lset('completions', [{ quest_id: q.id, period_key: period, completion_date: today, xp_awarded: q.xp_reward }, ...completions]);
 
-  const prog = lget('progress', defaultProgress(uid));
+  const prog = demoProgress(uid);
   const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
   const streak = prog.last_activity_date === today ? Math.max(prog.current_streak, 1)
     : prog.last_activity_date === yesterday ? prog.current_streak + 1 : 1;
@@ -319,9 +323,10 @@ export async function completeQuest(uid: string, slug: string): Promise<Complete
     }
   }
   lset('earned', earned);
-  lset('progress', { ...prog, total_xp: total, level: levelFor(total), current_streak: streak,
+  const questCoins = (prog.quest_coins ?? 0) + 1;
+  lset('progress', { ...prog, total_xp: total, quest_coins: questCoins, level: levelFor(total), current_streak: streak,
     longest_streak: Math.max(prog.longest_streak, streak), last_activity_date: today });
-  return { awarded: true, quest: q.slug, xp: q.xp_reward, xp_total_gain: gain, total_xp: total, level: levelFor(total), streak, new_achievements: newly };
+  return { awarded: true, quest: q.slug, xp: q.xp_reward, quest_coins: questCoins, xp_total_gain: gain, total_xp: total, level: levelFor(total), streak, new_achievements: newly };
 }
 
 // ── account ───────────────────────────────────────────────────────────────────

@@ -15,18 +15,24 @@ export default function LegalPage({ kind }: { kind: 'privacy' | 'terms' }) {
         {kind === 'privacy' ? (
           <>
             <h1>{t('Privacy')}</h1>
-            <h2>{t('What {name} stores', { name: brand.name })}</h2>
-            <p>{t('Your account email, the style preferences you choose, wardrobe items and photos you add, saved outfits, chat history and your quest progress. Nothing is mandatory except an email to sign in.')}</p>
-            <h2>{t('Who can see it')}</h2>
-            <p>{t('Only you. Every table uses row-level security tied to your account, and wardrobe photos live in a private bucket.')}</p>
-            <h2>{t('What is sent to the AI provider')}</h2>
-            <p>{t('Your message, recent chat turns, your style preferences, and (unless you turn it off in Settings) the names, categories and colours of your wardrobe items. Your email, exact location, sizes and photos are never sent.')}</p>
-            <h2>{t('Location and weather')}</h2>
-            <p>{t("Optional. You pick a city; no browser geolocation is requested. Only the city's coordinates are used to fetch weather.")}</p>
-            <h2>{t('Notifications and email')}</h2>
-            <p>{t('Reminders are off until you turn them on. Push notifications use a browser subscription you can remove any time. Emails are sent through Resend and include a link to switch them off.')}</p>
-            <h2>{t('Deleting your data')}</h2>
-            <p>{t('Settings → Privacy lets you download your data and permanently delete your account, which removes your profile, wardrobe, photos, chats and progress.')}</p>
+            <p>{t('{name} provides style profiles, an AI stylist, wardrobe and outfit tools, an avatar, quests and progress, optional weather, notifications, and a clothing marketplace. This notice describes the information those features use.', { name: brand.name })}</p>
+            <h2>{t('Information used by the app')}</h2>
+            <p>{t('Depending on the features you use, this can include your sign-in email, display name and language; style, colour, occasion, category, budget, shopping and size preferences; wardrobe descriptions and photos; chat messages and replies; saved outfits and favorites; avatar settings and looks; quest completions, achievements, experience points and streaks; and notification preferences and push subscription data.')}</p>
+            <p>{t('If you use the marketplace, listing details and photos you submit are stored, along with seller contact information and the city or country attached to a listing. The app may estimate a city or country from the connection for marketplace matching; the IP address is not stored by that feature. Listing details are shown to marketplace users. Seller contact details are revealed only through the listing contact action.')}</p>
+            <h2>{t('Where information is stored')}</h2>
+            <p>{t('With an account, app records are stored in the configured Supabase database and storage. Access controls are intended to limit private account records to that account; marketplace listings are designed to be visible to other users. Wardrobe and marketplace photos use protected storage links. In demo mode, supported app data is kept in this browser and is not synced; some features, including AI chat and photo uploads, are unavailable.')}</p>
+            <p>{t('The browser also stores settings and certain feature data locally, such as language, display preferences, avatar data, and demo data. The marketplace can temporarily cache approximate location in session storage. Your browser may store the sign-in session.')}</p>
+            <h2>{t('AI stylist')}</h2>
+            <p>{t('When you send a stylist request, your message, recent conversation turns and relevant style preferences are sent to the site’s AI service provider to generate a reply and outfit suggestions. If “Let Sage see my wardrobe items” is enabled, item names, categories and colours may also be sent. You can turn that option off in Settings. Account email, exact location, sizes and photos are not sent to the AI provider. The provider may process requests under its own service terms and retention practices.')}</p>
+            <h2>{t('Weather, voice and external services')}</h2>
+            <p>{t('Weather is optional. If you search for a city or enable weather, the city search or selected coordinates are sent to the configured weather provider. The app does not request browser geolocation for this feature. Voice input and spoken replies use browser speech capabilities; availability and processing depend on your browser and its provider.')}</p>
+            <p>{t('Authentication and app data use Supabase. Account and reminder emails may be delivered through configured email providers, including Resend. If you enable browser notifications, a push subscription is stored so notifications can be delivered. Marketplace contact buttons can open WhatsApp, phone, email or another external service; those services then handle your interaction under their own privacy policies.')}</p>
+            <h2>{t('Notifications and choices')}</h2>
+            <p>{t('Daily reminders and weekly summaries are optional and off until enabled. You can change notification channels and preferences in Settings. You can also disable weather, turn off sharing wardrobe details with the AI, and choose whether to use voice features.')}</p>
+            <h2>{t('Your choices and account deletion')}</h2>
+            <p>{t('Settings lets you request a download of available account data and delete your account. Deletion removes account data handled by the app, including profile information, wardrobe items and photos, conversations, saved outfits and progress. Some records may remain temporarily in provider backups or where retention is legally required.')}</p>
+            <h2>{t('Security and contact')}</h2>
+            <p>{t('The app uses account access controls and protected storage for private records, but no online service can guarantee absolute security. For privacy questions or requests, contact {email}.', { email: brand.contactEmail })}</p>
           </>
         ) : (
           <>

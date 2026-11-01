@@ -20,6 +20,7 @@ export type MascotSize = keyof typeof SIZES | number;
 
 type PoseKey = keyof typeof brand.mascotPoses;
 const POSE_FOR: Partial<Record<MascotState, PoseKey>> = {
+  happy: 'jump',
   greeting: 'wave', waving: 'wave',
   thinking: 'thinking', loading: 'thinking', confused: 'thinking',
   surprised: 'shocked',

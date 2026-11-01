@@ -154,7 +154,7 @@ export const frB: Record<string, string> = {
   "Sage is thinking": "Sage réfléchit",
   "Sage overshirt": "Surchemise sauge",
   "Sage will no longer see your wardrobe.": "Sage ne verra plus ta garde-robe.",
-  "Sage's replies will use this language. The app interface is available in English and Français for now.": "Les réponses de Sage utiliseront cette langue. L'interface de l'appli est disponible en anglais et en français pour l'instant.",
+  "Sage's replies will use this language. The app interface is available in English, Français and Arabic for now.": "Les réponses de Sage utiliseront cette langue. L'interface de l'appli est disponible en anglais, français et arabe pour l'instant.",
   "Save 3 outfits you love": "Enregistre 3 tenues que tu aimes",
   "Save a few outfits and I'll show which styles you gravitate to.": "Enregistre quelques tenues et je te montrerai les styles vers lesquels tu penches.",
   "Save an outfit that uses your wardrobe items.": "Enregistre une tenue qui utilise des pièces de ta garde-robe.",
